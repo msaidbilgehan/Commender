@@ -53,6 +53,7 @@ async def command_runner_endpoint(info: Request):
     command_result = command_run(
         command=command,
         sudo_password=password,
+        parse=True
     )
     logger.info(f"command_result: {command_result}")
 
@@ -79,7 +80,7 @@ async def command_runner_parameter_endpoint(command: str, password: str, is_sudo
     command_result = command_run(
         command=command,
         sudo_password=password,
-        parse=False
+        parse=True
     )
     logger.info(f"command_result: {command_result}")
 
@@ -117,6 +118,7 @@ async def reboot_endpoint(info: Request):
     command_result = command_run(
         command=command,
         sudo_password=password,
+        parse=True
     )
     logger.info(f"reboot_endpoint command_result: {command_result}")
 
@@ -157,7 +159,8 @@ async def info_endpoint(password: str):
 
 @app.get("/restart_app/{password}/{process_name}")
 async def restart_app(password: str, process_name: str):
-    find_parent_pid_by_name()
+    parent_pid = find_parent_pid_by_name("LS2R.py")
+
     logger.info(
         f"info_endpoint Parameters -> password: {password}"
     )
@@ -178,8 +181,23 @@ async def restart_app(password: str, process_name: str):
 
     response_temp["status"] = "SUCCESS"
     response_temp["message"] = "200"
-    response_temp["info_local_ip"] = info_local_ip
-    response_temp["info_os"] = info_os
-    response_temp["info_ram_cpu"] = info_ram_cpu
-    response_temp["info_gpu"] = info_gpu
+    return response_temp
+
+
+@app.get("/update")
+async def update():
+    command = "git pull origin master"
+
+    logger.info(
+        f"update called -> command: {command}"
+    )
+    response_temp = RESPONSE_STRUCTURE.copy()
+
+    command_result = command_run(
+        command=command,
+        parse=True
+    )
+
+    response_temp["status"] = "SUCCESS"
+    response_temp["message"] = command_result
     return response_temp

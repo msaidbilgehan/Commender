@@ -101,9 +101,9 @@ def isdir(st_mode):
 
 def command_run(
     command: Union[list[str], str],
-    parse: bool = False,
+    parse: bool = True,
     sudo_password: str = "",
-) -> str:
+) -> Union[subprocess.CompletedProcess[str], str]:
     # https://stackoverflow.com/questions/13045593/using-sudo-with-python-script
     # os.system('echo %s|sudo -S %s' % (sudoPassword, command))
     # os.popen("sudo -S %s"%(command), 'w').write('sudoPassword')
@@ -116,18 +116,19 @@ def command_run(
         else:
             raise ValueError("Command must be a list or a string.")
 
-    print("Command: ", command)
-
     if sudo_password == "":
         command_execute = command
     else:
         command_execute = f'echo {sudo_password}| sudo -S {command}'
 
     try:
-        return subprocess.run(
+        command_response = subprocess.run(
             command_execute,
-            stdout=subprocess.PIPE
-        ).stdout.decode('utf-8')
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        return command_response
     except Exception as error:
         return f"Error Occurred: {error}"
 
