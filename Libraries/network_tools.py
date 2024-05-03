@@ -4,18 +4,8 @@ import concurrent.futures
 import time
 from typing import Dict, List
 import paramiko
-from stat import S_ISDIR
 
 from Libraries.logger_module import logger
-
-
-
-def isdir(st_mode):
-    try:
-        return S_ISDIR(st_mode)
-    except IOError:
-        #Path does not exist, so by definition not a directory
-        return False
 
 
 
