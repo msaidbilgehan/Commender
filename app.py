@@ -199,3 +199,24 @@ async def update():
     response_temp["status"] = "SUCCESS"
     response_temp["message"] = command_result
     return response_temp
+
+if __name__ == '__main__':
+    import uvicorn
+    import sys
+
+    if len(sys.argv) < 2:
+        print("Please provide the host (such as 0.0.0.0) and the port (such as 8000) as an argument")
+        print("Example: python app.py 0.0.0.0 8000")
+        print("Using default parameters;")
+        print("\t |> Host: 0.0.0.0")
+        print("\t |> Port: 8000")
+        host = "0.0.0.0"
+        port = 8000
+    else:
+        host = sys.argv[1]
+        port = int(sys.argv[2])
+        print("Using parameters;")
+        print(f"\t |> Host: {host}")
+        print(f"\t |> Port: {port}")
+
+    uvicorn.run(app, port=port, host=host)
