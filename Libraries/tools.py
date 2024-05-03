@@ -14,6 +14,22 @@ import psutil
 import GPUtil
 
 
+def kill_process_by_name(name):
+    # Iterate over all running processes
+    response = []
+    for proc in psutil.process_iter(['pid', 'name']):
+        print("> proc: ", proc.info['name'])
+        # Check if process name matches the target name
+        if proc.info['name'] == name:
+            try:
+                proc.kill()  # Kill the process
+                response.append(f"Process {proc.info['pid']} ({name}) killed.")
+            except psutil.NoSuchProcess:
+                response.append(f"No such process with name {proc.info['pid']} ({name}.")
+            except psutil.AccessDenied:
+                response.append(f"Access denied when trying to kill the process {proc.info['pid']} ({name}.")
+    return response
+
 def find_parent_pid_by_name(process_name):
     # List to hold parent PIDs
     parent_pids = []

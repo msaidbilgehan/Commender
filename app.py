@@ -3,11 +3,14 @@ from fastapi import FastAPI, Request
 
 from Libraries.logger_module import logger
 from Libraries.network_tools import get_local_IP
-from Libraries.tools import command_run, find_parent_pid_by_name, get_cpu_ram_info, get_gpu_info, get_os_info
+from Libraries.tools import command_run, find_parent_pid_by_name, get_cpu_ram_info, get_gpu_info, get_os_info, kill_process_by_name
 
 
 
-app = FastAPI()
+app = FastAPI(
+    description="Commender App",
+    version="0.1.0"
+)
 
 RESPONSE_STRUCTURE: dict[str, Any] = {
     "status": "",
@@ -159,28 +162,23 @@ async def info_endpoint(password: str):
 
 @app.get("/restart_app/{password}/{process_name}")
 async def restart_app(password: str, process_name: str):
-    parent_pid = find_parent_pid_by_name("LS2R.py")
-
     logger.info(
-        f"info_endpoint Parameters -> password: {password}"
+        f"info_endpoint Parameters -> password: {password} | process_name: {process_name}"
     )
     response_temp = RESPONSE_STRUCTURE.copy()
 
-    if password == "":
+    if process_name == "":
         response_temp["status"] = "ERROR"
-        response_temp["message"] = "No password provided"
+        response_temp["message"] = "No process name provided"
         return response_temp
 
-    info_local_ip = get_local_IP()
-    info_os = get_os_info()
-    info_ram_cpu = get_cpu_ram_info()
-    info_gpu = get_gpu_info()
-
-    logger.info(
-        f"info -> IP: {info_local_ip} | OS: {info_os} | RAM/CPU: {info_ram_cpu} | GPU: {info_gpu}")
+    # parent_pid = find_parent_pid_by_name(process_name)
+    # logger.info(f"parent_pid: {parent_pid}")
+    response_command = kill_process_by_name(process_name)
+    logger.info(f"response_command: {response_command}")
 
     response_temp["status"] = "SUCCESS"
-    response_temp["message"] = "200"
+    response_temp["message"] = response_command
     return response_temp
 
 
