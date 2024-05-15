@@ -118,35 +118,46 @@ def isdir(st_mode):
 def command_run(
     command: Union[list[str], str],
     parse: bool = True,
-    sudo_password: str = "",
+    sudo_password: str = ""
 ) -> Union[subprocess.CompletedProcess[str], str]:
-    # https://stackoverflow.com/questions/13045593/using-sudo-with-python-script
-    # os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-    # os.popen("sudo -S %s"%(command), 'w').write('sudoPassword')
-
     if parse:
         if isinstance(command, str):
-            command = command.split(" ")
-        elif isinstance(command, list):
-            pass
-        else:
+            command = command.split()
+        elif not isinstance(command, list):
             raise ValueError("Command must be a list or a string.")
 
-    if sudo_password == "":
-        command_execute = command
-    else:
-        command_execute = f'echo {sudo_password}| sudo -S {command}'
-
-    try:
-        command_response = subprocess.run(
-            command_execute,
+    if sudo_password:
+        # Prepare the command string if a sudo password is provided
+        command = ['sudo', '-S'] + command
+        # Use Popen to securely input sudo password and run the command
+        process = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            text=True
         )
-        return command_response
-    except Exception as error:
-        return f"Error Occurred: {error}"
+        # Send sudo password followed by a newline to simulate Enter key
+        stdout, stderr = process.communicate(input=f"{sudo_password}\n")
+        if process.returncode != 0:
+            return f"Command '{' '.join(command)}' failed with exit status {process.returncode}: {stderr}"
+        else:
+            return stdout
+    else:
+        # Run the command without sudo password
+        try:
+            command_response = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True
+            )
+            return command_response.stdout
+        except subprocess.CalledProcessError as error:
+            return f"Command '{' '.join(command)}' failed with exit status {error.returncode}: {error.stderr}"
+        except Exception as error:
+            return f"Error Occurred '{' '.join(command)}': {error}"
 
 
 def read_log_file(path, wait_thread=None):

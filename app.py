@@ -8,7 +8,8 @@ from Libraries.tools import command_run, get_cpu_ram_info, get_gpu_info, get_os_
 
 
 app = FastAPI(
-    description="Commender App",
+    title="Commender App",
+    description="Commender App to command the device",
     version="0.1.0"
 )
 
@@ -92,31 +93,36 @@ async def command_runner_parameter_endpoint(command: str, password: str, is_sudo
     return response_temp
 
 
-@app.get("/reboot/")
-async def reboot_endpoint(info: Request):
+@app.get("/reboot")
+async def reboot_endpoint():
+# async def reboot_endpoint(info: Request):
+    # logger.info(
+    #     f"reboot_endpoint Parameters -> info: {info}"
+    # )
     logger.info(
-        f"reboot_endpoint Parameters -> info: {info}"
+        f"reboot_endpoint called"
     )
     response_temp = RESPONSE_STRUCTURE.copy()
 
-    try:
-        req_info = await info.json()
-    except Exception as error:
-        logger.error(error)
+    # try:
+    #     req_info = await info.json()
+    # except Exception as error:
+    #     logger.error(error)
 
-        response_temp["status"] = "ERROR"
-        response_temp["message"] = "Invalid JSON"
-        return response_temp
+    #     response_temp["status"] = "ERROR"
+    #     response_temp["message"] = "Invalid JSON"
+    #     return response_temp
 
-    logger.info(f"req_info: {req_info}")
+    # logger.info(f"req_info: {req_info}")
 
     command = "reboot -h now"
-    password = req_info.get("pass", "")
+    # password = req_info.get("pass", "")
+    password = "sktek_1"
 
-    if password == "":
-        response_temp["status"] = "ERROR"
-        response_temp["message"] = "No password provided"
-        return response_temp
+    # if password == "":
+    #     response_temp["status"] = "ERROR"
+    #     response_temp["message"] = "No password provided"
+    #     return response_temp
 
     command_result = command_run(
         command=command,
